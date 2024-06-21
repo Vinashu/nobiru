@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
 
     if (japaneseVoices.length > 0) {
+      console.log(japaneseVoices);
       playButton.dataset.voice = japaneseVoices[0].name;
     }
   };
@@ -74,6 +75,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const calculateNextReviewDate = (card) => {
+    const today = new Date();
+    const lastReviewed = new Date(card.nextReview || today);
+    const daysSinceLastReview = Math.round((today - lastReviewed) / (1000 * 60 * 60 * 24));
+
+    card.repetition += 1;
+    if (card.repetition === 1) {
+      card.interval = 1;
+    } else if (card.repetition === 2) {
+      card.interval = 6;
+    } else {
+      card.interval = Math.round(card.interval * card.easinessFactor);
+    }
+    card.nextReview = new Date(today.setDate(today.getDate() + card.interval)).toISOString().split('T')[0];
+  };
+
+  const updateEasinessFactor = (card, score) => {
+    card.easinessFactor += (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+    if (card.easinessFactor < 1.3) {
+      card.easinessFactor = 1.3;
+    }
+  };
+
   const displayFlashcard = () => {
     const flashcardData = flashcards[currentFlashcardIndex];
     if (flashcardData) {
@@ -102,6 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
       progress.performance.push(score);
       saveUserProgress();
 
+      // Update flashcard data using SM-2 algorithm
+      updateEasinessFactor(flashcardData, score);
+      calculateNextReviewDate(flashcardData);
+
       // Start flipping the front side
       flashcard.classList.add('is-flipping');
 
@@ -121,9 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   playButton.addEventListener('click', () => {
     if (isElectron()) {
-      // Use Electron IPC to send text-to-speech request to the main process
       const answerText = document.getElementById('answer-romaji').innerText;
-      window.ipcRenderer.send('speak', answerText);
+      try {
+        window.ipcRenderer.send('speak', answerText);
+      } catch (error) {
+        console.error('Error sending speak request:', error);
+      }
     } else {
       const answerText = document.getElementById('answer-katakana').innerText;
       const utterance = new SpeechSynthesisUtterance(answerText);
