@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nobiru</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="flashcard-container">
+    <div class="flashcard" id="flashcard">
+      <div class="flashcard-front">
+        <img src="images/apple.jpg" alt="Apple" class="flashcard-image">
+        <p id="question">What is the Japanese word for "apple"?</p>
+      </div>
+      <div class="flashcard-back">
+        <p id="answer">りんご</p>
+        <p id="answer">(ringo)</p>
+      </div>
+    </div>
+    <div class="controls" id="score-controls">
+      <button class="score-btn" data-score="0" style="background-color: #f44336;" title="0: Complete blackout">0</button>
+      <button class="score-btn" data-score="1" style="background-color: #ff9800;" title="1: Incorrect response, the answer seemed familiar">1</button>
+      <button class="score-btn" data-score="2" style="background-color: #ffeb3b;" title="2: Incorrect response, but it was easy to recall">2</button>
+      <button class="score-btn" data-score="3" style="background-color: #8bc34a;" title="3: Correct response, but it took effort">3</button>
+      <button class="score-btn" data-score="4" style="background-color: #4caf50;" title="4: Correct response after a hesitation">4</button>
+      <button class="score-btn" data-score="5" style="background-color: #2e7d32;" title="5: Perfect recall">5</button>
+    </div>
+    <div class="controls" id="action-controls" style="display: none;">
+      <button class="action-btn" id="play-btn">🔊 Play</button>
+      <button class="action-btn" id="next-btn">Next</button>
+    </div>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>

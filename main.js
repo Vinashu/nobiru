@@ -10,7 +10,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile('public/index.html');
 }
 
 app.whenReady().then(() => {
