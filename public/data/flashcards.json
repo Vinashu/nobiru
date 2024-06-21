@@ -9,7 +9,11 @@
       "romaji": "ringo",
       "kanji": "林檎",
       "hiragana": "りんご"
-    }
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
   },
   {
     "id": 2,
@@ -21,6 +25,90 @@
       "romaji": "neko",
       "kanji": "猫",
       "hiragana": "ねこ"
-    }
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
+  },
+  {
+    "id": 3,
+    "term": "みかん",
+    "meaning": "orange",
+    "image": "images/orange.jpg",
+    "versions": {
+      "katakana": "ミカン",
+      "romaji": "mikan",
+      "kanji": "蜜柑",
+      "hiragana": "みかん"
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
+  },
+  {
+    "id": 4,
+    "term": "いぬ",
+    "meaning": "dog",
+    "image": "images/dog.jpg",
+    "versions": {
+      "katakana": "イヌ",
+      "romaji": "inu",
+      "kanji": "犬",
+      "hiragana": "いぬ"
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
+  },
+  {
+    "id": 5,
+    "term": "うま",
+    "meaning": "horse",
+    "image": "images/horse.jpg",
+    "versions": {
+      "katakana": "ウマ",
+      "romaji": "uma",
+      "kanji": "馬",
+      "hiragana": "うま"
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
+  },
+  {
+    "id": 6,
+    "term": "ばなな",
+    "meaning": "banana",
+    "image": "images/banana.jpg",
+    "versions": {
+      "katakana": "バナナ",
+      "romaji": "banana",
+      "kanji": "",
+      "hiragana": "ばなな"
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
+  },
+  {
+    "id": 7,
+    "term": "とり",
+    "meaning": "bird",
+    "image": "images/bird.jpg",
+    "versions": {
+      "katakana": "トリ",
+      "romaji": "tori",
+      "kanji": "鳥",
+      "hiragana": "とり"
+    },
+    "interval": 1,
+    "repetition": 1,
+    "easinessFactor": 2.5,
+    "nextReview": "2024-06-23"
   }
 ]
