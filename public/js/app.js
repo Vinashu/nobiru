@@ -1,3 +1,7 @@
+const isElectron = () => {
+  return navigator.userAgent.includes('Electron');
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const flashcard = document.getElementById('flashcard');
   const flashcardFront = document.querySelector('.flashcard-front');
@@ -44,17 +48,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   playButton.addEventListener('click', () => {
-    const answerText = document.getElementById('answer').innerText;
-    const utterance = new SpeechSynthesisUtterance(answerText);
-    utterance.lang = 'ja-JP';
+    if (isElectron()) {
+      // Use Electron IPC to send text-to-speech request to the main process
+      const answerText = document.getElementById('answer-romaji').innerText;
+      window.ipcRenderer.send('speak', answerText);
+    } else {
+      const answerText = document.getElementById('answer-katakana').innerText;
+      const utterance = new SpeechSynthesisUtterance(answerText);
+      utterance.lang = 'ja-JP';
 
-    const selectedVoiceName = playButton.dataset.voice;
-    const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
+      const selectedVoiceName = playButton.dataset.voice;
+      const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      speechSynthesis.speak(utterance);
     }
-
-    speechSynthesis.speak(utterance);
   });
 
   nextButton.addEventListener('click', () => {
