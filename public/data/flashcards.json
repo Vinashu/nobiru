@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "term": "りんご",
+    "meaning": "apple",
+    "image": "images/apple.jpg",
+    "versions": {
+      "katakana": "リンゴ",
+      "romaji": "ringo",
+      "kanji": "林檎",
+      "hiragana": "りんご"
+    }
+  },
+  {
+    "id": 2,
+    "term": "ねこ",
+    "meaning": "cat",
+    "image": "images/cat.jpg",
+    "versions": {
+      "katakana": "ネコ",
+      "romaji": "neko",
+      "kanji": "猫",
+      "hiragana": "ねこ"
+    }
+  }
+]

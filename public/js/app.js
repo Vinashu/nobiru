@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const actionControls = document.getElementById('action-controls');
 
   let voices = [];
+  let currentFlashcardIndex = 0;
+  let flashcards = [];
+  let userProgress = {};
 
   const loadVoices = () => {
     voices = speechSynthesis.getVoices();
@@ -23,13 +26,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const loadFlashcards = () => {
+    fetch('data/flashcards.json')
+      .then(response => response.json())
+      .then(data => {
+        flashcards = data;
+        loadUserProgress();
+        displayFlashcard();
+      })
+      .catch(error => console.error('Error loading flashcards:', error));
+  };
+
+  const loadUserProgress = () => {
+    if (isElectron()) {
+      window.ipcRenderer.invoke('read-progress')
+        .then(data => {
+          userProgress = data || {};
+          initializeUserProgress();
+        })
+        .catch(error => console.error('Error loading user progress:', error));
+    } else {
+      const progressData = localStorage.getItem('userProgress');
+      if (progressData) {
+        userProgress = JSON.parse(progressData);
+      }
+      initializeUserProgress();
+    }
+  };
+
+  const initializeUserProgress = () => {
+    flashcards.forEach(card => {
+      if (!userProgress[card.id]) {
+        userProgress[card.id] = {
+          lastReviewed: null,
+          performance: []
+        };
+      }
+    });
+  };
+
+  const saveUserProgress = () => {
+    if (isElectron()) {
+      window.ipcRenderer.invoke('write-progress', userProgress)
+        .catch(error => console.error('Error saving user progress:', error));
+    } else {
+      localStorage.setItem('userProgress', JSON.stringify(userProgress));
+    }
+  };
+
+  const displayFlashcard = () => {
+    const flashcardData = flashcards[currentFlashcardIndex];
+    if (flashcardData) {
+      flashcardFront.querySelector('img').src = flashcardData.image;
+      flashcardFront.querySelector('#question').innerText = `What is the Japanese word for "${flashcardData.meaning}"?`;
+      flashcardBack.querySelector('#answer-katakana').innerText = flashcardData.versions.katakana;
+      flashcardBack.querySelector('#answer-romaji').innerText = `(${flashcardData.versions.romaji})`;
+    }
+  };
+
   loadVoices();
   if (speechSynthesis.onvoiceschanged !== undefined) {
     speechSynthesis.onvoiceschanged = loadVoices;
   }
 
+  loadFlashcards();
+
   buttons.forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (event) => {
+      const score = parseInt(event.target.dataset.score);
+      const flashcardData = flashcards[currentFlashcardIndex];
+
+      // Update user progress
+      const progress = userProgress[flashcardData.id];
+      progress.lastReviewed = new Date().toISOString().split('T')[0];
+      progress.performance.push(score);
+      saveUserProgress();
+
       // Start flipping the front side
       flashcard.classList.add('is-flipping');
 
@@ -68,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   nextButton.addEventListener('click', () => {
-    // Logic for loading the next card goes here
+    currentFlashcardIndex = (currentFlashcardIndex + 1) % flashcards.length;
+    displayFlashcard();
     actionControls.style.display = 'none';
     scoreControls.style.display = 'flex';
     flashcard.classList.remove('is-flipping');

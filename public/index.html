@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nobiru</title>
   <link rel="stylesheet" href="css/styles.css">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:;">
 </head>
 <body>
   <div class="flashcard-container">
@@ -19,14 +20,14 @@
       </div>
     </div>
     <div class="controls" id="score-controls">
-      <button class="score-btn" data-score="0" style="background-color: #f44336;" title="0: Complete blackout">0</button>
-      <button class="score-btn" data-score="1" style="background-color: #ff9800;" title="1: Incorrect response, the answer seemed familiar">1</button>
-      <button class="score-btn" data-score="2" style="background-color: #ffeb3b;" title="2: Incorrect response, but it was easy to recall">2</button>
-      <button class="score-btn" data-score="3" style="background-color: #8bc34a;" title="3: Correct response, but it took effort">3</button>
-      <button class="score-btn" data-score="4" style="background-color: #4caf50;" title="4: Correct response after a hesitation">4</button>
-      <button class="score-btn" data-score="5" style="background-color: #2e7d32;" title="5: Perfect recall">5</button>
+      <button class="score-btn score-btn-0" data-score="0" title="0: Complete blackout">0</button>
+      <button class="score-btn score-btn-1" data-score="1" title="1: Incorrect response, the answer seemed familiar">1</button>
+      <button class="score-btn score-btn-2" data-score="2" title="2: Incorrect response, but it was easy to recall">2</button>
+      <button class="score-btn score-btn-3" data-score="3" title="3: Correct response, but it took effort">3</button>
+      <button class="score-btn score-btn-4" data-score="4" title="4: Correct response after a hesitation">4</button>
+      <button class="score-btn score-btn-5" data-score="5" title="5: Perfect recall">5</button>
     </div>
-    <div class="controls" id="action-controls" style="display: none;">
+    <div class="controls" id="action-controls">
       <button class="action-btn" id="play-btn">🔊 Play</button>
       <button class="action-btn" id="next-btn">Next</button>
     </div>

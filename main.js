@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const say = require('say');
+const fileUtils = require('./fileUtils'); // Import the fileUtils module
+
+fileUtils.initialize(app); // Initialize fileUtils with the app object
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -34,10 +37,20 @@ app.on('activate', () => {
 
 // Handle the text-to-speech request from the renderer process
 ipcMain.on('speak', (event, text) => {
-  if (process.platform !== 'darwin') {
-    say.speak(text, 'Kyoko');
+  if (process.platform === 'darwin') {
+    say.speak(text, 'Kyoko'); // macOS Japanese voice
   } else {
-    say.speak(text, 'Microsoft Haruka Desktop');
-    // say.speak(text, 'Haruka');
+    say.speak(text, 'Microsoft Haruka Desktop'); // Windows Japanese voice
+    // Ichiro, Haruka, Ayumi
+    // say.speak(text, 'Microsoft Zira Desktop'); // Windows English voice
   }
+});
+
+// Handle read and write progress
+ipcMain.handle('read-progress', () => {
+  return fileUtils.readData();
+});
+
+ipcMain.handle('write-progress', (event, data) => {
+  fileUtils.writeData(data);
 });
