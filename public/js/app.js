@@ -2,8 +2,59 @@ const isElectron = () => {
   return navigator.userAgent.includes('Electron');
 };
 
+if (!isElectron()) {
+  class Flashcard {
+    constructor(id, term, meaning, image, versions, interval = 1, repetition = 1, easinessFactor = 2.5, nextReview = null) {
+      this.id = id;
+      this.term = term;
+      this.meaning = meaning;
+      this.image = image;
+      this.versions = versions;
+      this.interval = interval || 1;
+      this.repetition = repetition || 1;
+      this.easinessFactor = easinessFactor || 2.5;
+      this.nextReview = nextReview || new Date().toISOString().split('T')[0];
+    }
+  }
+
+  // Make the Flashcard class available globally in the browser
+  window.Flashcard = Flashcard;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  const flashcard = document.getElementById('flashcard');
+  // const createFlashcard = window.api.createFlashcard;
+  // const updateEasinessFactor = window.api.updateEasinessFactor;
+  // const calculateNextReviewDate = window.api.calculateNextReviewDate;
+
+  const createFlashcard = window.api?.createFlashcard || ((id, term, meaning, image, versions, interval, repetition, easinessFactor, nextReview) => {
+    return new Flashcard(id, term, meaning, image, versions, interval, repetition, easinessFactor, nextReview);
+  });
+  
+  const updateEasinessFactor = window.api?.updateEasinessFactor || ((score, obj) => {
+    obj.easinessFactor += (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+    if (obj.easinessFactor < 1.3) {
+      obj.easinessFactor = 1.3;
+    }
+  });
+  
+  const calculateNextReviewDate = window.api?.calculateNextReviewDate || ((obj) => {
+    const today = new Date();
+    const lastReviewed = new Date(obj.nextReview);
+    const daysSinceLastReview = Math.round((today - lastReviewed) / (1000 * 60 * 60 * 24));
+
+    obj.repetition += 1;
+    if (obj.repetition === 1) {
+      obj.interval = 1;
+    } else if (obj.repetition === 2) {
+      obj.interval = 6;
+    } else {
+      obj.interval = Math.round(obj.interval * obj.easinessFactor);
+    }
+    obj.nextReview = new Date(today.setDate(today.getDate() + obj.interval)).toISOString().split('T')[0];
+  });
+
+
+  const flashcardElement = document.getElementById('flashcard');
   const flashcardFront = document.querySelector('.flashcard-front');
   const flashcardBack = document.querySelector('.flashcard-back');
   const buttons = document.querySelectorAll('.score-btn');
@@ -22,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
 
     if (japaneseVoices.length > 0) {
-      console.log(japaneseVoices);
       playButton.dataset.voice = japaneseVoices[0].name;
     }
   };
@@ -31,7 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('data/flashcards.json')
       .then(response => response.json())
       .then(data => {
-        flashcards = data;
+        flashcards = data.map(card => {
+          const newCard = createFlashcard(card.id, card.term, card.meaning, card.image, card.versions, card.interval, card.repetition, card.easinessFactor, card.nextReview);
+          newCard.updateEasinessFactor = updateEasinessFactor.bind(newCard);
+          newCard.calculateNextReviewDate = calculateNextReviewDate.bind(newCard);
+          return newCard;
+        });
         loadUserProgress();
         displayFlashcard();
       })
@@ -40,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const loadUserProgress = () => {
     if (isElectron()) {
-      window.ipcRenderer.invoke('read-progress')
+      window.api.ipcRenderer.invoke('read-progress')
         .then(data => {
           userProgress = data || {};
           initializeUserProgress();
@@ -68,33 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const saveUserProgress = () => {
     if (isElectron()) {
-      window.ipcRenderer.invoke('write-progress', userProgress)
+      window.api.ipcRenderer.invoke('write-progress', userProgress)
         .catch(error => console.error('Error saving user progress:', error));
     } else {
       localStorage.setItem('userProgress', JSON.stringify(userProgress));
-    }
-  };
-
-  const calculateNextReviewDate = (card) => {
-    const today = new Date();
-    const lastReviewed = new Date(card.nextReview || today);
-    const daysSinceLastReview = Math.round((today - lastReviewed) / (1000 * 60 * 60 * 24));
-
-    card.repetition += 1;
-    if (card.repetition === 1) {
-      card.interval = 1;
-    } else if (card.repetition === 2) {
-      card.interval = 6;
-    } else {
-      card.interval = Math.round(card.interval * card.easinessFactor);
-    }
-    card.nextReview = new Date(today.setDate(today.getDate() + card.interval)).toISOString().split('T')[0];
-  };
-
-  const updateEasinessFactor = (card, score) => {
-    card.easinessFactor += (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
-    if (card.easinessFactor < 1.3) {
-      card.easinessFactor = 1.3;
     }
   };
 
@@ -127,11 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
       saveUserProgress();
 
       // Update flashcard data using SM-2 algorithm
-      updateEasinessFactor(flashcardData, score);
-      calculateNextReviewDate(flashcardData);
+      flashcardData.updateEasinessFactor(score, flashcardData);
+      flashcardData.calculateNextReviewDate(flashcardData);
 
       // Start flipping the front side
-      flashcard.classList.add('is-flipping');
+      flashcardElement.classList.add('is-flipping');
 
       // Switch between front and back at the halfway point of the animation
       setTimeout(() => {
@@ -149,9 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   playButton.addEventListener('click', () => {
     if (isElectron()) {
+      // Use Electron IPC to send text-to-speech request to the main process
       const answerText = document.getElementById('answer-romaji').innerText;
       try {
-        window.ipcRenderer.send('speak', answerText);
+        window.api.ipcRenderer.send('speak', answerText);
       } catch (error) {
         console.error('Error sending speak request:', error);
       }
@@ -175,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     displayFlashcard();
     actionControls.style.display = 'none';
     scoreControls.style.display = 'flex';
-    flashcard.classList.remove('is-flipping');
+    flashcardElement.classList.remove('is-flipping');
     flashcardFront.style.display = 'block';
     flashcardBack.style.display = 'none';
   });
